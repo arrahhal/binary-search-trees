@@ -52,6 +52,23 @@ class Tree {
     }
     return minVal;
   }
+  find(val, root = this.root) {
+    if (root.data === val) return root;
+
+    if (val > root.data) return this.find(val, root.right);
+    if (val < root.data) return this.find(val, root.left);
+  }
+  levelOrder(callback = (node) => node.data, root = this.root) {
+    const queue = [root];
+    const result = [];
+    while (queue.length !== 0) {
+      if (queue[0].left) queue.push(queue[0].left);
+      if (queue[0].right) queue.push(queue[0].right);
+      result.push(callback(queue[0]));
+      queue.shift();
+    }
+    return result;
+  }
 }
 
 function uniqueSortedArr(arr) {
@@ -86,5 +103,8 @@ function prettyPrint(node, prefix = '', isLeft = true) {
 const sampleTree = new Tree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
 prettyPrint(sampleTree.root);
 
-sampleTree.delete(1);
+sampleTree.delete(8);
 prettyPrint(sampleTree.root);
+
+console.log(sampleTree.find(23));
+console.log(sampleTree.levelOrder());
