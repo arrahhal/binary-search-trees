@@ -58,16 +58,19 @@ class Tree {
     if (val > root.data) return this.find(val, root.right);
     if (val < root.data) return this.find(val, root.left);
   }
-  levelOrder(callback = (node) => node.data, root = this.root) {
-    const queue = [root];
-    const result = [];
+  levelOrder(callback) {
+    if (!this.root) return [];
+    const queue = [this.root];
+    const results = [];
     while (queue.length !== 0) {
       if (queue[0].left) queue.push(queue[0].left);
       if (queue[0].right) queue.push(queue[0].right);
-      result.push(callback(queue[0]));
+      if (callback) callback(queue[0]);
+      else results.push(queue[0].data);
       queue.shift();
     }
-    return result;
+    if (!callback) return results;
+  }
   }
 }
 
