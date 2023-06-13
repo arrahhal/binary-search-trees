@@ -54,7 +54,6 @@ class Tree {
   }
   find(val, root = this.root) {
     if (root.data === val) return root;
-
     if (val > root.data) return this.find(val, root.right);
     if (val < root.data) return this.find(val, root.left);
   }
@@ -91,6 +90,30 @@ class Tree {
     const right = this.postOrder(callback, root.right);
     if (callback) callback(root);
     if (!callback) return [...left, ...right, root.data];
+  }
+  height(node = this.root) {
+    if (!node) return -1;
+    const right = this.height(node.right);
+    const left = this.height(node.left);
+    return left > right ? left + 1 : right + 1;
+  }
+  depth(node = this.root) {
+    return this.height() - this.height(node);
+  }
+  isBalanced(node = this.root) {
+    if (!node) return true;
+    const leftHeight = this.height(node.left);
+    const rightHeight = this.height(node.right);
+    if (Math.abs(leftHeight - rightHeight) <= 1) {
+      const left = this.isBalanced(node.left);
+      const right = this.isBalanced(node.right);
+      return left ? right : left;
+    }
+    return false;
+  }
+  rebalance() {
+    const currentTree = this.inOrder();
+    this.root = buildTree(currentTree);
   }
 }
 
@@ -144,3 +167,25 @@ console.log(sampleTree.postOrder());
 
 console.log('inOrder traversal array');
 console.log(sampleTree.inOrder());
+
+console.log('tree height is');
+console.log(sampleTree.height());
+
+console.log('node with value of 4 depth is');
+console.log(sampleTree.depth(sampleTree.find(3)));
+
+console.log('delete node(23)');
+sampleTree.delete(23);
+prettyPrint(sampleTree.root);
+console.log('check if the tree is balanced');
+console.log(sampleTree.isBalanced());
+
+// console.log('return 23 then check if tree is balanced');
+// sampleTree.insert(23);
+// prettyPrint(sampleTree.root);
+// console.log(sampleTree.isBalanced());
+
+console.log('reBalance the tree then check if balance');
+sampleTree.rebalance();
+prettyPrint(sampleTree.root);
+console.log(sampleTree.isBalanced());
