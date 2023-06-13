@@ -71,6 +71,26 @@ class Tree {
     }
     if (!callback) return results;
   }
+  preOrder(callback, root = this.root) {
+    if (!root) return [];
+    if (callback) callback(root);
+    const left = this.preOrder(callback, root.left);
+    const right = this.preOrder(callback, root.right);
+    if (!callback) return [root.data, ...left, ...right];
+  }
+  inOrder(callback, root = this.root) {
+    if (!root) return [];
+    const left = this.inOrder(callback, root.left);
+    if (callback) callback(root);
+    const right = this.inOrder(callback, root.right);
+    if (!callback) return [...left, root.data, ...right];
+  }
+  postOrder(callback, root = this.root) {
+    if (!root) return [];
+    const left = this.postOrder(callback, root.left);
+    const right = this.postOrder(callback, root.right);
+    if (callback) callback(root);
+    if (!callback) return [...left, ...right, root.data];
   }
 }
 
@@ -106,8 +126,21 @@ function prettyPrint(node, prefix = '', isLeft = true) {
 const sampleTree = new Tree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
 prettyPrint(sampleTree.root);
 
+console.log('delete 8 from tree');
 sampleTree.delete(8);
 prettyPrint(sampleTree.root);
 
-console.log(sampleTree.find(23));
+console.log('find node with value 67');
+console.log(sampleTree.find(67));
+
+console.log('levelOrder traversal array');
 console.log(sampleTree.levelOrder());
+
+console.log('preOrder traversal array');
+console.log(sampleTree.preOrder());
+
+console.log('postOrder traversal array');
+console.log(sampleTree.postOrder());
+
+console.log('inOrder traversal array');
+console.log(sampleTree.inOrder());
