@@ -11,39 +11,51 @@ class Tree {
     this.root = buildTree(arr);
   }
   insert(val, root = this.root) {
+    if (!root) {
+      this.root = new Node(val);
+    }
     if (val > root.data) {
-      if (root.right === null) root.right = new Node(val);
-      else this.insert(val, root.right);
-      return;
+      if (!root.right) {
+        root.right = new Node(val);
+        return;
+      }
+      this.insert(val, root.right);
     }
     if (val < root.data) {
-      if (root.left === null) root.left = new Node(val);
-      else this.insert(val, root.left);
-      return;
-    }
-  }
-  delete(val) {
-    this.root = this.deleteRec(val, this.root);
-  }
-  deleteRec(val, root = this.root) {
-    if (root === null) return root;
-
-    if (val > root.data) {
-      root.right = this.deleteRec(val, root.right);
-    } else if (val < root.data) {
-      root.left = this.deleteRec(val, root.left);
-    } else {
       if (!root.left) {
-        return root.right;
-      } else if (!root.right) {
-        return root.left;
+        root.left = new Node(val);
+        return;
       }
-      root.data = this.minValue(root.right);
-      root.right = this.deleteRec(root.data, root.right);
+      this.insert(val, root.left);
     }
+    return;
+  }
+  delete(val, root = this.root) {
+    if (!root) {
+      return null;
+    }
+    if (root.data < val) {
+      root.right = this.delete(val, root.right);
+      return root;
+    }
+    if (root.data > val) {
+      root.left = this.delete(val, root.left);
+      return root;
+    }
+    // root.data === val, so it needs to be deleted
+    if (!root.left) {
+      return root.right;
+    }
+    if (!root.right) {
+      return root.left;
+    }
+    // Replace the value of the node to be deleted with the smallest value in its right subtree
+    const minValue = this.minValue(root.right);
+    root.data = minValue;
+    // Delete the node with the smallest value in the right subtree
+    root.right = this.delete(minValue, root.right);
     return root;
   }
-
   minValue(root = this.root) {
     let minVal = root.data;
     while (root.left !== null) {
@@ -53,26 +65,39 @@ class Tree {
     return minVal;
   }
   find(val, root = this.root) {
+    if (root === null) return null;
     if (root.data === val) return root;
     if (val > root.data) return this.find(val, root.right);
     if (val < root.data) return this.find(val, root.left);
   }
   levelOrder(callback) {
-    if (!this.root) return [];
-    const queue = [this.root];
-    const results = [];
-    while (queue.length !== 0) {
-      if (queue[0].left) queue.push(queue[0].left);
-      if (queue[0].right) queue.push(queue[0].right);
-      if (callback) callback(queue[0]);
-      else results.push(queue[0].data);
-      queue.shift();
+    if (!this.root) {
+      if (callback) return;
+      return [];
     }
-    if (!callback) return results;
+    const queue = [this.root];
+    const values = [];
+    while (queue.length) {
+      const node = queue.shift();
+      if (node.left) {
+        queue.push(node.left);
+      }
+      if (node.right) {
+        queue.push(node.right);
+      }
+      if (callback) {
+        callback(node);
+      } else {
+        values.push(node.data);
+      }
+    }
+    if (!callback) {
+      return values;
+    }
   }
   preOrder(callback, root = this.root) {
     if (!root) return [];
-    if (callback) callback(root);
+    callback && callback(root);
     const left = this.preOrder(callback, root.left);
     const right = this.preOrder(callback, root.right);
     if (!callback) return [root.data, ...left, ...right];
@@ -80,7 +105,7 @@ class Tree {
   inOrder(callback, root = this.root) {
     if (!root) return [];
     const left = this.inOrder(callback, root.left);
-    if (callback) callback(root);
+    callback && callback(root);
     const right = this.inOrder(callback, root.right);
     if (!callback) return [...left, root.data, ...right];
   }
@@ -88,32 +113,36 @@ class Tree {
     if (!root) return [];
     const left = this.postOrder(callback, root.left);
     const right = this.postOrder(callback, root.right);
-    if (callback) callback(root);
+    callback && callback(root);
     if (!callback) return [...left, ...right, root.data];
   }
   height(node = this.root) {
     if (!node) return -1;
-    const right = this.height(node.right);
-    const left = this.height(node.left);
-    return left > right ? left + 1 : right + 1;
+    const rightHeight = this.height(node.right);
+    const leftHeight = this.height(node.left);
+    return Math.max(rightHeight, leftHeight) + 1;
   }
   depth(node = this.root) {
     return this.height() - this.height(node);
   }
   isBalanced(node = this.root) {
-    if (!node) return true;
+    if (!node) {
+      return true;
+    }
     const leftHeight = this.height(node.left);
     const rightHeight = this.height(node.right);
-    if (Math.abs(leftHeight - rightHeight) <= 1) {
-      const left = this.isBalanced(node.left);
-      const right = this.isBalanced(node.right);
-      return left ? right : left;
+    if (
+      Math.abs(leftHeight - rightHeight) <= 1 &&
+      this.isBalanced(node.left) &&
+      this.isBalanced(node.right)
+    ) {
+      return true;
     }
     return false;
   }
   rebalance() {
-    const currentTree = this.inOrder();
-    this.root = buildTree(currentTree);
+    const currentTreeArr = this.inOrder();
+    this.root = buildTree(currentTreeArr);
   }
 }
 
@@ -172,7 +201,7 @@ console.log('tree height is');
 console.log(sampleTree.height());
 
 console.log('node with value of 4 depth is');
-console.log(sampleTree.depth(sampleTree.find(3)));
+console.log(sampleTree.depth(sampleTree.find(4)));
 
 console.log('delete node(23)');
 sampleTree.delete(23);
@@ -189,3 +218,7 @@ console.log('reBalance the tree then check if balance');
 sampleTree.rebalance();
 prettyPrint(sampleTree.root);
 console.log(sampleTree.isBalanced());
+
+console.log('insert val = 90');
+sampleTree.insert(90);
+prettyPrint(sampleTree.root);
