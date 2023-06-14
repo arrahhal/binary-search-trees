@@ -8,7 +8,21 @@ class Node {
 
 class Tree {
   constructor(arr) {
-    this.root = buildTree(arr);
+    this.root = this.buildTree(arr);
+  }
+  buildTree(arr = []) {
+    const uniqueArr = [...new Set(arr)].sort((a, b) => a - b);
+    const build = (start, end) => {
+      if (start > end) {
+        return null;
+      }
+      const mid = Math.floor((start + end) / 2);
+      const node = new Node(uniqueArr[mid]);
+      node.left = build(start, mid - 1);
+      node.right = build(mid + 1, end);
+      return node;
+    };
+    return build(0, uniqueArr.length - 1);
   }
   insert(val, root = this.root) {
     if (!root) {
@@ -50,19 +64,18 @@ class Tree {
       return root.left;
     }
     // Replace the value of the node to be deleted with the smallest value in its right subtree
-    const minValue = this.minValue(root.right);
+    const minValue = this.minValueNode(root.right).data;
     root.data = minValue;
     // Delete the node with the smallest value in the right subtree
     root.right = this.delete(minValue, root.right);
     return root;
   }
-  minValue(root = this.root) {
-    let minVal = root.data;
-    while (root.left !== null) {
-      minVal = root.left.data;
-      root = root.left;
+  minValueNode(root = this.root) {
+    let current = root;
+    while (current.left) {
+      current = root.left;
     }
-    return minVal;
+    return current;
   }
   find(val, root = this.root) {
     if (root === null) return null;
@@ -142,24 +155,8 @@ class Tree {
   }
   rebalance() {
     const currentTreeArr = this.inOrder();
-    this.root = buildTree(currentTreeArr);
+    this.root = this.buildTree(currentTreeArr);
   }
-}
-
-function uniqueSortedArr(arr) {
-  return arr
-    .sort((a, b) => a - b)
-    .filter((val, pos) => arr.indexOf(val) === pos);
-}
-
-function buildTree(arr = []) {
-  arr = uniqueSortedArr(arr);
-  const midIndex = Math.floor(arr.length / 2);
-  if (arr.length === 0) return null;
-  const root = new Node(arr[midIndex]);
-  root.left = buildTree(arr.slice(0, midIndex));
-  root.right = buildTree(arr.slice(midIndex + 1));
-  return root;
 }
 
 function prettyPrint(node, prefix = '', isLeft = true) {
@@ -174,51 +171,3 @@ function prettyPrint(node, prefix = '', isLeft = true) {
     prettyPrint(node.left, `${prefix}${isLeft ? '    ' : '│   '}`, true);
   }
 }
-
-const sampleTree = new Tree([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
-prettyPrint(sampleTree.root);
-
-console.log('delete 8 from tree');
-sampleTree.delete(8);
-prettyPrint(sampleTree.root);
-
-console.log('find node with value 67');
-console.log(sampleTree.find(67));
-
-console.log('levelOrder traversal array');
-console.log(sampleTree.levelOrder());
-
-console.log('preOrder traversal array');
-console.log(sampleTree.preOrder());
-
-console.log('postOrder traversal array');
-console.log(sampleTree.postOrder());
-
-console.log('inOrder traversal array');
-console.log(sampleTree.inOrder());
-
-console.log('tree height is');
-console.log(sampleTree.height());
-
-console.log('node with value of 4 depth is');
-console.log(sampleTree.depth(sampleTree.find(4)));
-
-console.log('delete node(23)');
-sampleTree.delete(23);
-prettyPrint(sampleTree.root);
-console.log('check if the tree is balanced');
-console.log(sampleTree.isBalanced());
-
-// console.log('return 23 then check if tree is balanced');
-// sampleTree.insert(23);
-// prettyPrint(sampleTree.root);
-// console.log(sampleTree.isBalanced());
-
-console.log('reBalance the tree then check if balance');
-sampleTree.rebalance();
-prettyPrint(sampleTree.root);
-console.log(sampleTree.isBalanced());
-
-console.log('insert val = 90');
-sampleTree.insert(90);
-prettyPrint(sampleTree.root);
